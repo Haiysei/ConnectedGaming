@@ -58,6 +58,11 @@ public class VisualPiece : MonoBehaviour
 	/// </summary>
 	public void OnMouseDown()
 	{
+		//White Piece can only be moved by the server
+		if (GameManager.Instance.SideToMove.ToString() == "White" && !NetworkManager.Singleton.IsServer) return;
+		//Black Piece can only be moved by the client
+		if (GameManager.Instance.SideToMove.ToString() == "Black" && NetworkManager.Singleton.IsServer) return;
+
 		if (enabled && GameManager.Instance.paused == false)
 		{
 			// Convert the world position of the piece to screen-space and store it.
@@ -71,6 +76,11 @@ public class VisualPiece : MonoBehaviour
 	/// </summary>
 	private void OnMouseDrag()
 	{
+		//White Piece can only be moved by the server
+		if (GameManager.Instance.SideToMove.ToString() == "White" && !NetworkManager.Singleton.IsServer) return;
+		//Black Piece can only be moved by the client
+		if (GameManager.Instance.SideToMove.ToString() == "Black" && NetworkManager.Singleton.IsServer) return;
+
 		if (enabled && GameManager.Instance.paused == false)
 		{
 			// Create a new screen-space position based on the current mouse position,
@@ -87,6 +97,11 @@ public class VisualPiece : MonoBehaviour
 	/// </summary>
 	public void OnMouseUp()
 	{
+		//White Piece can only be moved by the server
+		if (GameManager.Instance.SideToMove.ToString() == "White" && !NetworkManager.Singleton.IsServer) return;
+		//Black Piece can only be moved by the client
+		if (GameManager.Instance.SideToMove.ToString() == "Black" && NetworkManager.Singleton.IsServer) return;
+
 		if (enabled && GameManager.Instance.paused == false)
 		{
 			// Clear any previous potential landing square candidates.

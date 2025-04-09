@@ -344,8 +344,25 @@ public class GameManager : NetworkBehaviour
 		// Determine the destination square based on the name of the closest board square transform.
 		Square endSquare = new Square(closestBoardSquareTransform.name);
 
+		game.TryGetLegalMove(movedPieceInitialSquare, endSquare, out Movement move);
+		bool specialMoveHandled = await TryHandleSpecialMoveBehaviourAsync(move as SpecialMove);
+
+		ExecuteMoveServerRpc(movedPieceInitialSquare.ToString(), endSquare.ToString(), specialMoveHandled);
+	}
+
+	[ServerRpc(RequireOwnership = false)]
+	private void ExecuteMoveServerRpc(string initialSquareName, string endSquareName, bool specialMoveHandled)
+	{
+		// Convert the square names to Square objects.
+		Square initialSquare = new Square(initialSquareName);
+		Square endSquare = new Square(endSquareName);
+
+		Transform movedPieceTransform = specialMoveHandled
+			? BoardManager.Instance.GetPieceGOAtPosition(endSquare).transform
+			: BoardManager.Instance.GetPieceGOAtPosition(initialSquare).transform;
+
 		// Attempt to retrieve a legal move from the game logic.
-		if (!game.TryGetLegalMove(movedPieceInitialSquare, endSquare, out Movement move))
+		if (!game.TryGetLegalMove(initialSquare, endSquare, out Movement move))
 		{
 			// If no legal move is found, reset the piece's position.
 			movedPieceTransform.position = movedPieceTransform.parent.position;
@@ -358,15 +375,9 @@ public class GameManager : NetworkBehaviour
 			return;
 		}
 
-		// If the move is a promotion move, set the promotion piece.
-		if (move is PromotionMove promotionMove)
-		{
-			promotionMove.SetPromotionPiece(promotionPiece);
-		}
-
 		// If the move is not a special move or its special behaviour is successfully handled,
 		// and the move executes successfully...
-		if ((move is not SpecialMove specialMove || await TryHandleSpecialMoveBehaviourAsync(specialMove))
+		if ((move is not SpecialMove specialMove || specialMoveHandled)
 			&& TryExecuteMove(move)
 		)
 		{
@@ -378,11 +389,38 @@ public class GameManager : NetworkBehaviour
 			{
 				movedPieceTransform = BoardManager.Instance.GetPieceGOAtPosition(move.End).transform;
 			}
-
-			// Re-parent the moved piece to the destination square and update its position.
-			movedPieceTransform.parent = closestBoardSquareTransform;
-			movedPieceTransform.position = closestBoardSquareTransform.position;
 		}
+
+		// If the move is a promotion move, set the promotion piece.
+		if (move is PromotionMove promotionMove)
+		{
+			//promotionMove.SetPromotionPiece(piece);
+		}
+
+
+		ExecuteMoveClientRpc(initialSquareName, endSquareName, specialMoveHandled);
+	}
+
+	[ClientRpc]
+	private void ExecuteMoveClientRpc(string initialSquareName, string endSquareName, bool specialMoveHandled)
+	{
+		Square initialSquare = new Square(initialSquareName);
+		Square endSquare = new Square(endSquareName);
+		Square movedPieceInitialSquare = new Square(initialSquareName);
+		Transform endSquareTransform = GameObject.Find(endSquareName).transform;
+
+		if (!NetworkManager.Singleton.IsServer)
+		{
+			game.TryGetLegalMove(initialSquare, endSquare, out Movement move);
+			TryExecuteMove(move);
+		}
+
+		Transform movedPieceTransform = specialMoveHandled
+			? BoardManager.Instance.GetPieceGOAtPosition(endSquare).transform
+			: BoardManager.Instance.GetPieceGOAtPosition(movedPieceInitialSquare).transform;
+
+		movedPieceTransform.parent = endSquareTransform;
+		movedPieceTransform.position = endSquareTransform.position;
 	}
 
 	/// <summary>

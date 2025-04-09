@@ -5,37 +5,64 @@ using TMPro;
 
 public class PlayerNetwork : NetworkBehaviour
 {
-    private TMP_Text notifaction;
+    private TMP_Text notification;
+    private const int MaxPlayers = 2; // Maximum number of players allowed
 
     void Awake()
     {
-        notifaction = GameObject.Find("Notification").GetComponent<TMP_Text>();
+        notification = GameObject.Find("Notification").GetComponent<TMP_Text>();
     }
 
     public override void OnNetworkSpawn()
     {
-        if (IsClient)
-        {
-            // Subscribe to connection failure events
-            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
-        }
-
         if (IsServer)
         {
-            // Handle invalid session codes or other server-side errors
+            // Subscribe to client connection and disconnection events
+            NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+
             Debug.Log("Server started successfully.");
+        }
+
+        if (IsClient)
+        {
+            // Subscribe to disconnection events
+            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
         }
     }
 
     public override void OnNetworkDespawn()
     {
-        if (IsClient)
+        if (IsServer)
         {
             // Unsubscribe from events to avoid memory leaks
+            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
+        }
+
+        if (IsClient)
+        {
             NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
         }
 
         Debug.Log("PlayerNetwork: OnNetworkDespawn() called");
+    }
+
+    /// <summary>
+    /// Handles client connection events.
+    /// </summary>
+    /// <param name="clientId">The ID of the connected client.</param>
+    private void OnClientConnected(ulong clientId)
+    {
+        if (NetworkManager.Singleton.ConnectedClients.Count > MaxPlayers)
+        {
+            Debug.LogWarning($"Client {clientId} was rejected because the maximum player limit ({MaxPlayers}) was reached.");
+            NetworkManager.Singleton.DisconnectClient(clientId);
+        }
+        else
+        {
+            Debug.Log($"Client {clientId} connected. Total players: {NetworkManager.Singleton.ConnectedClients.Count}");
+        }
     }
 
     /// <summary>
@@ -50,10 +77,10 @@ public class PlayerNetwork : NetworkBehaviour
         }
         else
         {
-            Debug.Log($"Client {clientId} disconnected.");
-            //Pause the game
+            Debug.Log($"Client {clientId} disconnected. Total players: {NetworkManager.Singleton.ConnectedClients.Count - 1}");
+            // Pause the game if an opponent disconnects
             GameManager.Instance.paused = true;
-            notifaction.text = "Opponent disconnected. Game paused.";
+            notification.text = "Opponent disconnected. Game paused.";
         }
     }
 

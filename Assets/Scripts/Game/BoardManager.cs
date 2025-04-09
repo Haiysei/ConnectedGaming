@@ -123,6 +123,17 @@ public class BoardManager : NetworkBehaviour
 			CreateAndPlacePieceGO(piece, square);
 		}
 
+		OnGameResetToHalfMoveServerRpc();
+	}
+
+	[ServerRpc]
+	private void OnGameResetToHalfMoveServerRpc()
+	{
+		OnGameResetToHalfMoveClientRpc();
+	}
+	[ClientRpc]
+	private void OnGameResetToHalfMoveClientRpc()
+	{
 		// Retrieve the most recent half-move.
 		GameManager.Instance.HalfMoveTimeline.TryGetCurrent(out HalfMove latestHalfMove);
 		// If the game ended by checkmate or stalemate, disable all pieces.
@@ -304,6 +315,18 @@ public class BoardManager : NetworkBehaviour
 	/// Clears all visual pieces from the board.
 	/// </summary>
 	private void ClearBoard()
+	{
+		ClearBoardServerRpc();
+	}
+
+	[ServerRpc(RequireOwnership = false)]
+	public void ClearBoardServerRpc()
+	{
+		ClearBoardClientRpc();
+	}
+
+	[ClientRpc]
+	public void ClearBoardClientRpc()
 	{
 		// Retrieve all VisualPiece components in child objects.
 		VisualPiece[] visualPiece = GetComponentsInChildren<VisualPiece>(true);

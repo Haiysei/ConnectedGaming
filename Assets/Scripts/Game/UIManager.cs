@@ -4,14 +4,16 @@ using UnityChess;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Unity.Netcode;
 
 /// <summary>
 /// Manages the user interface of the chess game, including promotion UI, move history,
 /// turn indicators, game string serialization, and board information displays.
 /// Inherits from MonoBehaviourSingleton to ensure a single instance throughout the game.
 /// </summary>
-public class UIManager : MonoBehaviourSingleton<UIManager>
+public class UIManager : NetworkBehaviour
 {
+	public static UIManager Instance { get; private set; }
 	// Reference to the promotion UI panel.
 	[SerializeField] private GameObject promotionUI = null;
 	// Text element to display game result messages (e.g. win, draw).
@@ -44,7 +46,22 @@ public class UIManager : MonoBehaviourSingleton<UIManager>
 	// Computed button colour based on the background colour and darkening factor.
 	private Color buttonColor;
 
-	private TMP_Text notifaction;
+	private TMP_Text notification;
+
+	private void Awake()
+	{
+		// Ensure only one instance of GameManager exists
+		if (Instance != null && Instance != this)
+		{
+			Destroy(gameObject); // Destroy duplicate instance
+			return;
+		}
+
+		Instance = this;
+		DontDestroyOnLoad(gameObject); // Persist across scenes
+
+		resultText.gameObject.SetActive(true);
+	}
 
 	/// <summary>
 	/// Initialises the UIManager, subscribes to game events, and configures initial UI settings.
@@ -57,7 +74,7 @@ public class UIManager : MonoBehaviourSingleton<UIManager>
 		GameManager.MoveExecutedEvent += OnMoveExecuted;
 		GameManager.GameResetToHalfMoveEvent += OnGameResetToHalfMove;
 
-		notifaction = GameObject.Find("Notification").GetComponent<TMP_Text>();
+		notification = GameObject.Find("Notification").GetComponent<TMP_Text>();
 
 		// Initialise the timeline for move UI elements.
 		moveUITimeline = new Timeline<FullMoveUI>();
@@ -81,6 +98,18 @@ public class UIManager : MonoBehaviourSingleton<UIManager>
 	/// </summary>
 	private void OnNewGameStarted()
 	{
+		NewGameStartServerRpc();
+	}
+
+	[ServerRpc(RequireOwnership = true)]
+	public void NewGameStartServerRpc()
+	{
+		NewGameStartClientRpc();
+	}
+
+	[ClientRpc]
+	public void NewGameStartClientRpc()
+	{
 		// Update the serialized game string input field.
 		UpdateGameStringInputField();
 		// Validate turn indicator images.
@@ -100,7 +129,7 @@ public class UIManager : MonoBehaviourSingleton<UIManager>
 
 		//Unpause Game
 		GameManager.Instance.paused = false;
-		notifaction.text = "";
+		notification.text = "White Turn";
 	}
 
 	/// <summary>
@@ -109,9 +138,19 @@ public class UIManager : MonoBehaviourSingleton<UIManager>
 	/// </summary>
 	private void OnGameEnded()
 	{
+		GameEndServerRpc();
+	}
+
+	[ServerRpc(RequireOwnership = false)]
+	private void GameEndServerRpc()
+	{
+		GameEndClientRpc();
+	}
+	[ClientRpc]
+	private void GameEndClientRpc()
+	{
 		// Retrieve the latest half-move from the game timeline.
 		GameManager.Instance.HalfMoveTimeline.TryGetCurrent(out HalfMove latestHalfMove);
-
 		// Set the result text based on whether checkmate or stalemate occurred.
 		if (latestHalfMove.CausedCheckmate)
 		{
@@ -143,6 +182,8 @@ public class UIManager : MonoBehaviourSingleton<UIManager>
 		// Retrieve the latest half-move and add it to the move history UI.
 		GameManager.Instance.HalfMoveTimeline.TryGetCurrent(out HalfMove lastMove);
 		AddMoveToHistory(lastMove, sideToMove.Complement());
+
+		notification.text = sideToMove.ToString() + " Turn";
 	}
 
 	/// <summary>
@@ -151,6 +192,18 @@ public class UIManager : MonoBehaviourSingleton<UIManager>
 	/// </summary>
 	private void OnGameResetToHalfMove()
 	{
+		OnGameResetToHalfMoveServerRpc();
+	}
+
+	[ServerRpc]
+	public void OnGameResetToHalfMoveServerRpc()
+	{
+		OnGameResetToHalfMoveClientRpc();
+	}
+
+	[ClientRpc]
+	public void OnGameResetToHalfMoveClientRpc()
+	{
 		// Update the serialized game string input field.
 		UpdateGameStringInputField();
 		// Set the timeline's head index to the current full move number.
@@ -158,6 +211,7 @@ public class UIManager : MonoBehaviourSingleton<UIManager>
 		// Validate the turn indicators.
 		ValidateIndicators();
 	}
+
 
 	/// <summary>
 	/// Activates or deactivates the promotion UI.
