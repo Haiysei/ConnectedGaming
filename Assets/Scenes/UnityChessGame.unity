@@ -492,7 +492,8 @@ MonoBehaviour:
   NetworkConfig:
     ProtocolVersion: 0
     NetworkTransport: {fileID: 868522772}
-    PlayerPrefab: {fileID: 0}
+    PlayerPrefab: {fileID: 3971446143522434737, guid: 4572a7fce4efdf14ea11e7da272f061d,
+      type: 3}
     Prefabs:
       NetworkPrefabsLists: []
     TickRate: 30
@@ -2174,6 +2175,11 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4477086018480572551, guid: caf93e4ddc2f0544cbddf4e2facb7fd7,
+        type: 3}
+      propertyPath: StartButton
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 4620594118505507394, guid: caf93e4ddc2f0544cbddf4e2facb7fd7,
         type: 3}
       propertyPath: m_AnchorMax.y
@@ -3027,7 +3033,7 @@ PrefabInstance:
     - target: {fileID: 6810705476634634377, guid: caf93e4ddc2f0544cbddf4e2facb7fd7,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: 0.00012207031
       objectReference: {fileID: 0}
     - target: {fileID: 6823757786411297794, guid: caf93e4ddc2f0544cbddf4e2facb7fd7,
         type: 3}
@@ -3941,7 +3947,8 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 1422483850444072656, guid: caf93e4ddc2f0544cbddf4e2facb7fd7, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 7962587129748717513, guid: caf93e4ddc2f0544cbddf4e2facb7fd7,
         type: 3}

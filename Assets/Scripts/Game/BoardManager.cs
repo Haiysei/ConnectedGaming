@@ -158,6 +158,23 @@ public class BoardManager : NetworkBehaviour
 	{
 		// Construct the model name based on the piece's owner and type.
 		string modelName = $"{piece.Owner} {piece.GetType().Name}";
+		string positionName = SquareToString(position);
+
+		// Create the piece GameObject on the server.
+		CreateAndPlacePieceGOServerRpc(modelName, positionName);
+	}
+
+	[ServerRpc(RequireOwnership = false)]
+	public void CreateAndPlacePieceGOServerRpc(string modelName, string positionName)
+	{
+		CreateAndPlacePieceGOClientRpc(modelName, positionName);
+	}
+
+	[ClientRpc]
+	public void CreateAndPlacePieceGOClientRpc(string modelName, string positionName)
+	{
+		// Convert the position name back to a Square object.
+		Square position = new Square(positionName);
 		// Instantiate the piece GameObject from the corresponding resource.
 		GameObject pieceGO = Instantiate(
 			Resources.Load("PieceSets/Marble/" + modelName) as GameObject,

@@ -9,7 +9,7 @@ public class PlayerNetwork : NetworkBehaviour
 {
     public override void OnNetworkSpawn()
     {
-        print("PlayerNetwork: OnNetworkSpawn() called");
+
     }
 
 
