@@ -58,7 +58,7 @@ public class VisualPiece : MonoBehaviour
 	/// </summary>
 	public void OnMouseDown()
 	{
-		if (enabled)
+		if (enabled && GameManager.Instance.paused == false)
 		{
 			// Convert the world position of the piece to screen-space and store it.
 			piecePositionSS = boardCamera.WorldToScreenPoint(transform.position);
@@ -71,7 +71,7 @@ public class VisualPiece : MonoBehaviour
 	/// </summary>
 	private void OnMouseDrag()
 	{
-		if (enabled)
+		if (enabled && GameManager.Instance.paused == false)
 		{
 			// Create a new screen-space position based on the current mouse position,
 			// preserving the original depth (z-coordinate).
@@ -87,7 +87,7 @@ public class VisualPiece : MonoBehaviour
 	/// </summary>
 	public void OnMouseUp()
 	{
-		if (enabled)
+		if (enabled && GameManager.Instance.paused == false)
 		{
 			// Clear any previous potential landing square candidates.
 			potentialLandingSquares.Clear();

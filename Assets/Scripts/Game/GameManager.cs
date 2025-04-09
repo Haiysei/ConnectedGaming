@@ -19,6 +19,7 @@ public class GameManager : NetworkBehaviour
 	public static event Action GameEndedEvent;
 	public static event Action GameResetToHalfMoveEvent;
 	public static event Action MoveExecutedEvent;
+	public bool paused = false;
 
 	private void Awake()
 	{

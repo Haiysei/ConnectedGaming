@@ -17,6 +17,14 @@ public class NetworkUI : MonoBehaviour
     private void StartClient()
     {
         NetworkManager.Singleton.StartClient();
+        if (NetworkManager.Singleton.IsClient && !NetworkManager.Singleton.IsHost)
+        {
+            Debug.Log("Client connected successfully.");
+        }
+        else
+        {
+            Debug.LogError("Failed to connect as a client. Please check your connection or session code.");
+        }
     }
 
     private void StartHost()
