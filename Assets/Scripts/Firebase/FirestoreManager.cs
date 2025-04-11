@@ -13,6 +13,7 @@ public class FirestoreManager : MonoBehaviour
 
     void Awake()
     {
+        FirebaseFirestore.DefaultInstance.Settings.PersistenceEnabled = false;
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);

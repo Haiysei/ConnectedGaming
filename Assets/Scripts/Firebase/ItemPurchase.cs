@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 public class ItemPurchase : MonoBehaviour
 {
     public StoreItem Item;
+    bool confirmed = false;
 
     string userId = "client";
 
@@ -29,6 +30,14 @@ public class ItemPurchase : MonoBehaviour
     }
     public void DownloadItem()
     {
+        if (!confirmed)
+        {
+            TMP_Text priceText = transform.GetChild(3).GetComponent<TMP_Text>();
+            priceText.text = "Confirm?";
+            StartCoroutine(RevertTextAfterDelay(priceText));
+            confirmed = true;
+            return;
+        }
         if (ShopManager.Instance.PurchaseItem(Item.Price))
         {
             DisablePurchase();
@@ -50,16 +59,20 @@ public class ItemPurchase : MonoBehaviour
     {
         yield return new WaitForSeconds(2f);
         priceText.text = Item.Price.ToString();
+        confirmed = false;
     }
 
     void Download()
     {
-        string internalUrl = Item.ThumbnailUrl.Split("firebasestorage.app/")[1];
-        string filename = Item.Name.Replace(" ", "");
-        string filepath = Path.Combine(Application.persistentDataPath, filename + "." + internalUrl.Split(".")[1]);
-        FirebaseStorageManager.Instance.DownloadToFile(internalUrl, filepath);
-
         transform.GetChild(5).GetComponent<Button>().interactable = true;
+        //Check if file already exists at C:/Users/user/AppData/LocalLow/DefaultCompany/UnityChess\
+        if (File.Exists(Path.Combine(Application.persistentDataPath, Item.Name.Replace(" ", "") + ".png")))
+        {
+            Debug.Log("File already exists, no need to download again.");
+            return;
+        }
+        string filepath = System.IO.Path.Combine(Application.persistentDataPath, Item.Name.Replace(" ", "")) + ".png";
+        FirebaseStorageManager.Instance.DownloadToFile("dlc/" + Item.Name.Replace(" ", "_").ToLower() + ".png", filepath);
     }
 
     void DisablePurchase()
@@ -68,5 +81,12 @@ public class ItemPurchase : MonoBehaviour
         transform.GetChild(0).GetComponent<Image>().color = new Color(0.5f, 0.5f, 0.5f, 1f);
     }
 
-    public void EquipItem() { }
+    public void EquipItem()
+    {
+        //Get Network Player object of the player
+        PlayerInfo playerNetwork = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<PlayerInfo>();
+
+        playerNetwork.userId = userId;
+        playerNetwork.playerIcon = Item.Name.Replace(" ", "");
+    }
 }

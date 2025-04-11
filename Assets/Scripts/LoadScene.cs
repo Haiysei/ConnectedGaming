@@ -17,6 +17,13 @@ public class LoadScene : MonoBehaviour
             //Load the Shop Scene
             shopCanvas.GetComponent<Canvas>().enabled = true;
             shopManager.SetActive(true);
+
+            //Load the Store
+            if (shopManager.GetComponent<FirebaseStorageManager>().loaded == false)
+            {
+                FirebaseStorageManager.Instance.DownloadToByteArray("StoreItems.xml", FirebaseStorageManager.DownloadType.MANIFEST);
+                shopManager.GetComponent<FirebaseStorageManager>().loaded = true;
+            }
         }
         else
         {

@@ -32,6 +32,8 @@ public class PlayerNetwork : NetworkBehaviour
             // Subscribe to disconnection events
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
         }
+
+        ShopButton.GetComponent<Button>().interactable = true;
     }
 
     public override void OnNetworkDespawn()
@@ -67,7 +69,6 @@ public class PlayerNetwork : NetworkBehaviour
         else
         {
             Debug.Log($"Client {clientId} connected. Total players: {NetworkManager.Singleton.ConnectedClients.Count}");
-            ShopButton.GetComponent<Button>().interactable = true;
         }
     }
 
