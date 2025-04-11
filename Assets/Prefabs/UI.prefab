@@ -5794,7 +5794,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ClientButton: {fileID: 7669333666423757676}
   HostButton: {fileID: 7311369472084580067}
-  StartButton: {fileID: 0}
 --- !u!1 &8086249350321996451
 GameObject:
   m_ObjectHideFlags: 0
