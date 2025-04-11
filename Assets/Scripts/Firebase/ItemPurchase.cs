@@ -4,20 +4,36 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
+using Unity.Netcode;
+using System.Threading.Tasks;
 
 public class ItemPurchase : MonoBehaviour
 {
     public StoreItem Item;
+
+    string userId = "client";
+
+    public async Task Start()
+    {
+        //If user is host
+        if (NetworkManager.Singleton.IsServer)
+            userId = "host";
+
+        bool hasItem = await FirestoreManager.Instance.GetDlcOwnership(userId, Item.Name.Replace(" ", ""));
+
+        if (hasItem)
+        {
+            DisablePurchase();
+            Download();
+        }
+    }
     public void DownloadItem()
     {
         if (ShopManager.Instance.PurchaseItem(Item.Price))
         {
-            GetComponent<Button>().enabled = false;
-            transform.GetChild(0).GetComponent<Image>().color = new Color(0.5f, 0.5f, 0.5f, 1f);
-            string internalUrl = Item.ThumbnailUrl.Split("firebasestorage.app/")[1];
-            string filename = Item.Name.Replace(" ", "");
-            string filepath = Path.Combine(Application.persistentDataPath, filename + "." + internalUrl.Split(".")[1]);
-            FirebaseStorageManager.Instance.DownloadToFile(internalUrl, filepath);
+            DisablePurchase();
+            Download();
+            FirestoreManager.Instance.SetDlcOwnership(userId, Item.Name.Replace(" ", ""), true);
         }
         else
         {
@@ -34,5 +50,19 @@ public class ItemPurchase : MonoBehaviour
     {
         yield return new WaitForSeconds(2f);
         priceText.text = Item.Price.ToString();
+    }
+
+    void Download()
+    {
+        string internalUrl = Item.ThumbnailUrl.Split("firebasestorage.app/")[1];
+        string filename = Item.Name.Replace(" ", "");
+        string filepath = Path.Combine(Application.persistentDataPath, filename + "." + internalUrl.Split(".")[1]);
+        FirebaseStorageManager.Instance.DownloadToFile(internalUrl, filepath);
+    }
+
+    void DisablePurchase()
+    {
+        GetComponent<Button>().enabled = false;
+        transform.GetChild(0).GetComponent<Image>().color = new Color(0.5f, 0.5f, 0.5f, 1f);
     }
 }

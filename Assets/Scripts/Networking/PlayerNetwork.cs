@@ -2,9 +2,12 @@ using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class PlayerNetwork : NetworkBehaviour
 {
+    [SerializeField] private Button ShopButton;
+
     private TMP_Text notification;
     private const int MaxPlayers = 2; // Maximum number of players allowed
 
@@ -46,6 +49,8 @@ public class PlayerNetwork : NetworkBehaviour
         }
 
         Debug.Log("PlayerNetwork: OnNetworkDespawn() called");
+        ShopButton.GetComponent<Button>().interactable = false;
+
     }
 
     /// <summary>
@@ -62,6 +67,7 @@ public class PlayerNetwork : NetworkBehaviour
         else
         {
             Debug.Log($"Client {clientId} connected. Total players: {NetworkManager.Singleton.ConnectedClients.Count}");
+            ShopButton.GetComponent<Button>().interactable = true;
         }
     }
 
