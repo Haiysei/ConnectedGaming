@@ -58,6 +58,8 @@ public class ItemPurchase : MonoBehaviour
         string filename = Item.Name.Replace(" ", "");
         string filepath = Path.Combine(Application.persistentDataPath, filename + "." + internalUrl.Split(".")[1]);
         FirebaseStorageManager.Instance.DownloadToFile(internalUrl, filepath);
+
+        transform.GetChild(5).GetComponent<Button>().interactable = true;
     }
 
     void DisablePurchase()
@@ -65,4 +67,6 @@ public class ItemPurchase : MonoBehaviour
         GetComponent<Button>().enabled = false;
         transform.GetChild(0).GetComponent<Image>().color = new Color(0.5f, 0.5f, 0.5f, 1f);
     }
+
+    public void EquipItem() { }
 }
