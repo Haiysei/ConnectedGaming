@@ -106,6 +106,7 @@ public class BoardManager : NetworkBehaviour
 
 		// Enable only the pieces that belong to the side whose turn it is.
 		EnsureOnlyPiecesOfSideAreEnabled(GameManager.Instance.SideToMove);
+		AnalyticsManager.Instance.MatchStart();
 	}
 
 	/// <summary>

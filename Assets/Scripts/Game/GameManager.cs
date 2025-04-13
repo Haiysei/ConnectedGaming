@@ -231,6 +231,7 @@ public class GameManager : NetworkBehaviour
 		{
 			BoardManager.Instance.SetActiveAllPieces(false);
 			GameEndedEvent?.Invoke();
+			print("Game ended");
 		}
 		else
 		{

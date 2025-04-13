@@ -43,6 +43,8 @@ public class ItemPurchase : MonoBehaviour
             DisablePurchase();
             Download();
             FirestoreManager.Instance.SetDlcOwnership(userId, Item.Name.Replace(" ", ""), true);
+            AnalyticsManager.Instance.PurchasedDLC(Item.Name.Replace(" ", ""));
+            confirmed = false;
         }
         else
         {

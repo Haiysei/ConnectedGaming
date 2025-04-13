@@ -138,6 +138,8 @@ public class UIManager : NetworkBehaviour
 	/// </summary>
 	private void OnGameEnded()
 	{
+		print("Game Ended");
+		AnalyticsManager.Instance.MatchEnd();
 		GameEndServerRpc();
 	}
 
